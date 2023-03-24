@@ -143,6 +143,10 @@ export class VodFoundation extends cdk.Stack {
                 new iam.PolicyStatement({
                     resources: [`arn:${cdk.Aws.PARTITION}:execute-api:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:*`],
                     actions: ['execute-api:Invoke']
+                }),
+                new iam.PolicyStatement({
+                    resources: [`arn:${cdk.Aws.PARTITION}:secretsmanager:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:kantar*`],
+                    actions: ['secretsmanager:GetSecretValue']
                 })
             ]
         });
