@@ -29,7 +29,7 @@ export class VodFoundation extends cdk.Stack {
         new cdk.CfnMapping(this, 'Send', { // NOSONAR
             mapping: {
                 AnonymousUsage: {
-                    Data: 'Yes'
+                    Data: 'No'
                 }
             }
         });
