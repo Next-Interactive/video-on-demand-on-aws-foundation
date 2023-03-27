@@ -102,6 +102,16 @@ export class VodFoundation extends cdk.Stack {
               ],
         });
         /**
+         * Kantar logs S3 bucket to host watermarking logs
+        */
+        const kantar = new s3.Bucket(this, 'Destination', {
+            serverAccessLogsBucket: logsBucket,
+            serverAccessLogsPrefix: 'kantar-bucket-logs/',
+            encryption: s3.BucketEncryption.S3_MANAGED,
+            publicReadAccess: false,
+            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        });
+        /**
          * Solutions construct to create Cloudfrotnt with an s3 bucket as the origin
          * https://docs.aws.amazon.com/solutions/latest/constructs/aws-cloudfront-s3.html
          * insertHttpSecurityHeaders is set to false as this requires the deployment to be in us-east-1
@@ -137,7 +147,7 @@ export class VodFoundation extends cdk.Stack {
         const mediaconvertPolicy = new iam.Policy(this, 'MediaconvertPolicy', {
             statements: [
                 new iam.PolicyStatement({
-                    resources: [`${source.bucketArn}/*`, `${destination.bucketArn}/*`],
+                    resources: [`${source.bucketArn}/*`, `${destination.bucketArn}/*`, `${kantar.bucketArn}/*`],
                     actions: ['s3:GetObject', 's3:PutObject']
                 }),
                 new iam.PolicyStatement({
