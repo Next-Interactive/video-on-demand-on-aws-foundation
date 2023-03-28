@@ -104,7 +104,7 @@ export class VodFoundation extends cdk.Stack {
         /**
          * Kantar logs S3 bucket to host watermarking logs
         */
-        const kantar = new s3.Bucket(this, 'Destination', {
+        const kantar = new s3.Bucket(this, 'Kantar', {
             serverAccessLogsBucket: logsBucket,
             serverAccessLogsPrefix: 'kantar-bucket-logs/',
             encryption: s3.BucketEncryption.S3_MANAGED,
@@ -151,11 +151,15 @@ export class VodFoundation extends cdk.Stack {
                     actions: ['s3:GetObject', 's3:PutObject']
                 }),
                 new iam.PolicyStatement({
+                    resources: [`${kantar.bucketArn}`],
+                    actions: ['s3:ListBucket']
+                }),
+                new iam.PolicyStatement({
                     resources: [`arn:${cdk.Aws.PARTITION}:execute-api:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:*`],
                     actions: ['execute-api:Invoke']
                 }),
                 new iam.PolicyStatement({
-                    resources: [`arn:${cdk.Aws.PARTITION}:secretsmanager:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:kantar*`],
+                    resources: [`arn:${cdk.Aws.PARTITION}:secretsmanager:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:secret:kantar*`],
                     actions: ['secretsmanager:GetSecretValue']
                 })
             ]
