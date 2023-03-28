@@ -41,6 +41,11 @@ export class VodFoundation extends cdk.Stack {
             description: "The admin email address to receive SNS notifications for job status.",
             allowedPattern: "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"
         });
+        const additionalEmail = new cdk.CfnParameter(this, "additionalEmailAddress", {
+            type: "String",
+            description: "A second email address to receive SNS notifications for job status (Ad Tech team, ...).",
+            allowedPattern: "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"
+        });
         /**
          * Logs bucket for S3 and CloudFront
         */
@@ -377,9 +382,13 @@ export class VodFoundation extends cdk.Stack {
             existingTopicObj: snsTopic.snsTopic
         });
         /**
-         * Subscribe the admin email address to the SNS topic created but the construct.
+         * Subscribe the admin email address to the SNS topic created by the construct.
          */
         snsTopic.snsTopic.addSubscription(new subs.EmailSubscription(adminEmail.valueAsString))
+        /**
+         * Subscribe the additional email address to the SNS topic created by the construct.
+         */
+        snsTopic.snsTopic.addSubscription(new subs.EmailSubscription(additionalEmail.valueAsString))
 
         /**
         * AppRegistry
