@@ -35,13 +35,19 @@ exports.handler = async (event,context) => {
             SolutionId:SOLUTION_ID
         };
         /**
+         * extract pubid from file name.
+         */
+        const pubidWithFileExtension = srcVideo.replace(/^.*_pubid_/, "");
+        const pubid = pubidWithFileExtension.replace(/\.(mp4|mxf)$/i, "");
+        console.log(pubid);
+        /**
          * download and validate settings 
          */
         let job = await utils.getJobSettings(srcBucket,settingsFile);
         /**
          * parse settings file to update source / destination
          */
-        job = await utils.updateJobSettings(job,inputPath,outputPath,metaData,MEDIACONVERT_ROLE);
+        job = await utils.updateJobSettings(job,inputPath,outputPath,metaData,MEDIACONVERT_ROLE,pubid);
         /**
          * Submit Job
          */
