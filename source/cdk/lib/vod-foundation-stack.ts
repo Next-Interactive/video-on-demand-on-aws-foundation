@@ -233,6 +233,7 @@ export class VodFoundation extends cdk.Stack {
                 MEDIACONVERT_ROLE: mediaconvertRole.roleArn,
                 JOB_SETTINGS: 'job-settings.json',
                 DESTINATION_BUCKET: destination.bucketName,
+                KANTAR_LOGS_BUCKET: kantar.bucketName,
                 SOLUTION_ID: 'SO0146',
                 STACKNAME: cdk.Aws.STACK_NAME,
                 SOLUTION_IDENTIFIER: 'AwsSolution/SO0146/v1.1.0'

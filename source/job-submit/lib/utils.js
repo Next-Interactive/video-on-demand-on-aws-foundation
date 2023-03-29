@@ -42,7 +42,7 @@ const getJobSettings = async (bucket, settingsFile) => {
  * 
  * add pubid customization for Kantar watermarking.
  */
-const updateJobSettings = async (job, inputPath, outputPath, metadata, role, pubid) => {
+const updateJobSettings = async (job, inputPath, outputPath, metadata, role, pubid, kantarLogsPath) => {
     console.log(`Updating Job Settings with the source and destination details`);
     const getPath = (group, num) => {
         try {
@@ -105,6 +105,7 @@ const updateJobSettings = async (job, inputPath, outputPath, metadata, role, pub
         */
         job.UserMetadata = {...job.UserMetadata, ...metadata};
         job.Settings.KantarWatermark.ContentReference = pubid;
+        job.Settings.KantarWatermark.LogDestination = kantarLogsPath;
     } catch (err) {
         throw {
             Message:'Failed to update the job-settings.json file. Details on using custom settings: https://github.com/awslabs/video-on-demand-on-aws-foundations',
