@@ -29,7 +29,7 @@ export class VodFoundation extends cdk.Stack {
         new cdk.CfnMapping(this, 'Send', { // NOSONAR
             mapping: {
                 AnonymousUsage: {
-                    Data: 'Yes'
+                    Data: 'No'
                 }
             }
         });
@@ -39,6 +39,11 @@ export class VodFoundation extends cdk.Stack {
         const adminEmail = new cdk.CfnParameter(this, "emailAddress", {
             type: "String",
             description: "The admin email address to receive SNS notifications for job status.",
+            allowedPattern: "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"
+        });
+        const additionalEmail = new cdk.CfnParameter(this, "additionalEmailAddress", {
+            type: "String",
+            description: "A second email address to receive SNS notifications for job status (Ad Tech team, ...).",
             allowedPattern: "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"
         });
         /**
@@ -102,6 +107,16 @@ export class VodFoundation extends cdk.Stack {
               ],
         });
         /**
+         * Kantar logs S3 bucket to host watermarking logs
+        */
+        const kantar = new s3.Bucket(this, 'Kantar', {
+            serverAccessLogsBucket: logsBucket,
+            serverAccessLogsPrefix: 'kantar-bucket-logs/',
+            encryption: s3.BucketEncryption.S3_MANAGED,
+            publicReadAccess: false,
+            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        });
+        /**
          * Solutions construct to create Cloudfrotnt with an s3 bucket as the origin
          * https://docs.aws.amazon.com/solutions/latest/constructs/aws-cloudfront-s3.html
          * insertHttpSecurityHeaders is set to false as this requires the deployment to be in us-east-1
@@ -137,12 +152,20 @@ export class VodFoundation extends cdk.Stack {
         const mediaconvertPolicy = new iam.Policy(this, 'MediaconvertPolicy', {
             statements: [
                 new iam.PolicyStatement({
-                    resources: [`${source.bucketArn}/*`, `${destination.bucketArn}/*`],
+                    resources: [`${source.bucketArn}/*`, `${destination.bucketArn}/*`, `${kantar.bucketArn}/*`],
                     actions: ['s3:GetObject', 's3:PutObject']
+                }),
+                new iam.PolicyStatement({
+                    resources: [`${kantar.bucketArn}`],
+                    actions: ['s3:ListBucket']
                 }),
                 new iam.PolicyStatement({
                     resources: [`arn:${cdk.Aws.PARTITION}:execute-api:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:*`],
                     actions: ['execute-api:Invoke']
+                }),
+                new iam.PolicyStatement({
+                    resources: [`arn:${cdk.Aws.PARTITION}:secretsmanager:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:secret:kantar*`],
+                    actions: ['secretsmanager:GetSecretValue']
                 })
             ]
         });
@@ -210,6 +233,7 @@ export class VodFoundation extends cdk.Stack {
                 MEDIACONVERT_ROLE: mediaconvertRole.roleArn,
                 JOB_SETTINGS: 'job-settings.json',
                 DESTINATION_BUCKET: destination.bucketName,
+                KANTAR_LOGS_BUCKET: kantar.bucketName,
                 SOLUTION_ID: 'SO0146',
                 STACKNAME: cdk.Aws.STACK_NAME,
                 SOLUTION_IDENTIFIER: 'AwsSolution/SO0146/v1.1.0'
@@ -359,9 +383,13 @@ export class VodFoundation extends cdk.Stack {
             existingTopicObj: snsTopic.snsTopic
         });
         /**
-         * Subscribe the admin email address to the SNS topic created but the construct.
+         * Subscribe the admin email address to the SNS topic created by the construct.
          */
         snsTopic.snsTopic.addSubscription(new subs.EmailSubscription(adminEmail.valueAsString))
+        /**
+         * Subscribe the additional email address to the SNS topic created by the construct.
+         */
+        snsTopic.snsTopic.addSubscription(new subs.EmailSubscription(additionalEmail.valueAsString))
 
         /**
         * AppRegistry

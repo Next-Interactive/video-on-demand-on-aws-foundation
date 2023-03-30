@@ -40,8 +40,9 @@ const getJobSettings = async (bucket, settingsFile) => {
  * Parse the job settings file and update the inputs/outputs. the num values are
  * to dupport multiple output groups of the same type. 
  * 
+ * add pubid customization for Kantar watermarking.
  */
-const updateJobSettings = async (job, inputPath, outputPath, metadata, role) => {
+const updateJobSettings = async (job, inputPath, outputPath, metadata, role, pubid, kantarLogsPath) => {
     console.log(`Updating Job Settings with the source and destination details`);
     const getPath = (group, num) => {
         try {
@@ -103,6 +104,8 @@ const updateJobSettings = async (job, inputPath, outputPath, metadata, role) => 
          * jobs submitted to MediaConvert by the solution
         */
         job.UserMetadata = {...job.UserMetadata, ...metadata};
+        job.Settings.KantarWatermark.ContentReference = pubid;
+        job.Settings.KantarWatermark.LogDestination = kantarLogsPath;
     } catch (err) {
         throw {
             Message:'Failed to update the job-settings.json file. Details on using custom settings: https://github.com/awslabs/video-on-demand-on-aws-foundations',

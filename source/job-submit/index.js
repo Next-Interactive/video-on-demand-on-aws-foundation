@@ -13,6 +13,7 @@ exports.handler = async (event,context) => {
         MEDIACONVERT_ROLE,
         JOB_SETTINGS,
         DESTINATION_BUCKET,
+        KANTAR_LOGS_BUCKET,
         SOLUTION_ID,
         STACKNAME,
         SNS_TOPIC_ARN
@@ -29,11 +30,18 @@ exports.handler = async (event,context) => {
         const guid = uuidv4();
         const inputPath = `s3://${srcBucket}/${srcVideo}`;
         const outputPath = `s3://${DESTINATION_BUCKET}/${guid}`;
+        const kantarLogsPath = `s3://${KANTAR_LOGS_BUCKET}/kantar-logs/`;
         const metaData = {
             Guid:guid,
             StackName:STACKNAME,
             SolutionId:SOLUTION_ID
         };
+        /**
+         * extract pubid from file name.
+         */
+        const pubidWithFileExtension = srcVideo.replace(/^.*_pubid_/, "");
+        const pubid = pubidWithFileExtension.replace(/\.(mp4|mxf)$/i, "");
+        console.log(pubid);
         /**
          * download and validate settings 
          */
@@ -41,7 +49,7 @@ exports.handler = async (event,context) => {
         /**
          * parse settings file to update source / destination
          */
-        job = await utils.updateJobSettings(job,inputPath,outputPath,metaData,MEDIACONVERT_ROLE);
+        job = await utils.updateJobSettings(job,inputPath,outputPath,metaData,MEDIACONVERT_ROLE,pubid,kantarLogsPath);
         /**
          * Submit Job
          */
