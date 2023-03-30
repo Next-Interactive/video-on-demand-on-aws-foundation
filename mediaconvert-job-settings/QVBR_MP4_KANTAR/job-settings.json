@@ -19,9 +19,13 @@
               "CodecSettings": {
                 "Codec": "H_264",
                 "H264Settings": {
-                  "MaxBitrate": 5000000,
+                  "MaxBitrate": 10000000,
                   "RateControlMode": "QVBR",
-                  "SceneChangeDetect": "TRANSITION_DETECTION"
+                  "QvbrSettings": {
+                    "QvbrQualityLevel": 9
+                  },                  
+                  "SceneChangeDetect": "TRANSITION_DETECTION",
+                  "QualityTuningLevel": "SINGLE_PASS_HQ"
                 }
               }
             },
