@@ -22,9 +22,11 @@ exports.handler = async (event) => {
     console.log(`REQUEST:: ${JSON.stringify(event, null, 2)}`);
     let MEDIACONVERT_ENDPOINT = await getEndpoint();
     const {
-        SNS_TOPIC_ARN,
         SOURCE_BUCKET,
-        JOB_MANIFEST
+        JOB_MANIFEST,
+        EMAIL_SENDER,
+        EMAILS_RECEIVERS,
+        EMAILS_CC
     } = process.env;
 
     try {
@@ -57,10 +59,9 @@ exports.handler = async (event) => {
                    console.log(results)
                    let inputFile = String(results.InputFile).split('/').slice(-1)[0];
                    let outputFile = String(results.OutputGroupDetails[0].outputDetails[0].outputFilePaths[0]).split('/').slice(3).join('/');
-                    //await utils.sendSns(SNS_TOPIC_ARN,status,results);
                     console.log(inputFile,outputFile);
                     console.log("sending SES EMAIL")
-                    await utils.sendEmail(["hicham.abid.prestataire@alticemedia.com"],["hicham.abid.prestataire@alticemedia.com"],"hicham.abid.prestataire@alticemedia.com","success",inputFile,outputFile);
+                    await utils.sendEmail(EMAILS_RECEIVERS.split(';'),EMAILS_CC.split(';'),EMAIL_SENDER,"success",inputFile,outputFile);
                 } catch (err) {
                     throw err;
                 }
@@ -71,7 +72,7 @@ exports.handler = async (event) => {
                  * Send error to SNS
                  */
                 try {
-                    await utils.sendEmail(["hicham.abid.prestataire@alticemedia.com"],["hicham.abid.prestataire@alticemedia.com"],"hicham.abid.prestataire@alticemedia.com","error");
+                    await utils.sendEmail(EMAILS_RECEIVERS.split(';'),EMAILS_CC.split(';'),EMAIL_SENDER,"error");
                 } catch (err) {
                     throw err;
                 }
@@ -80,7 +81,7 @@ exports.handler = async (event) => {
                 throw new Error('Unknow job status');
         }
     } catch (err) {
-        await utils.sendEmail(["hicham.abid.prestataire@alticemedia.com"],["hicham.abid.prestataire@alticemedia.com"],"hicham.abid.prestataire@alticemedia.com","error");
+        await utils.sendEmail(EMAILS_RECEIVERS.split(';'),EMAILS_CC.split(';'),EMAIL_SENDER,"error");
         console.log(err)
         throw err;
     }

@@ -56,12 +56,11 @@ resource "aws_lambda_function" "complete_job" {
   timeout          = 30
   environment {
     variables = {
-      SNS_TOPIC_ARN = aws_sns_topic.kantar_flow.arn
       SOURCE_BUCKET = module.source_bucket.id
       JOB_MANIFEST  = "jobs-manifest.json"
-      METRICS       = "No"
-      SOLUTION_ID   = "SO0146"
-      VERSION       = "1.1.0"
+      EMAIL_SENDER  = "exploitation-tech-digital@nextinteractive.fr"
+      EMAILS_RECEIVERS = "exploitation-tech-digital@nextinteractive.fr;lise.carriere@alticemedia.com"
+      EMAILS_CC        = "hicham.abid.prestataire@alticemedia.com"
     }
   }
 }
@@ -94,12 +93,13 @@ resource "aws_lambda_function" "ftps_authentication" {
   }
 }
 
+
 resource "aws_lambda_permission" "authentication" {
   statement_id  = "AllowExecutionFromApiGW"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.ftps_authentication.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.ftps_authentication.execution_arn}/*"
+  source_arn    = "arn:aws:execute-api:${local.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.ftps_authentication.id}/*"
 }
 
 

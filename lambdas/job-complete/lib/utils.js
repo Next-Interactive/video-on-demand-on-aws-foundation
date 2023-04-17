@@ -5,7 +5,7 @@
 const AWS = require('aws-sdk');
 
 
-const sendEmail = async (email_to_adresses,email_cc_adresses,sender_email,state,video_name="",output_file="",supportEmail="default") => {
+const sendEmail = async (email_to_adresses,email_cc_adresses,sender_email,state,video_name="",output_file="",supportEmail="exploitation-tech-digital@nextinteractive.fr") => {
     // Create sendEmail params
 let successMessage = `<p>Bonjour,</p><p>Votre demande de watermarking kantar pour la créative <strong>${video_name}</strong> a <strong>réussie</strong> .</p><p>La créative marquée a pour chemin: <strong>${output_file}</strong></p>`
 let errorMessage = `<p>Bonjour,</p><p>Votre demande de watermarking kantar pour la créative <strong>${video_name}</strong> a <strong>échouée</strong> .</p><p>N'hésitez pas à contacter <strong>${supportEmail}</strong> pour une assistance technique</p>`

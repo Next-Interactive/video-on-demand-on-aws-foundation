@@ -1,10 +1,11 @@
 resource "aws_iam_role" "mediaconvert" {
-  name               = "mediaconvert-${local.application}"
+  name               = "mediaconvert-kantar-role"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "",
       "Effect": "Allow",
       "Principal": {
         "Service": "mediaconvert.amazonaws.com"
@@ -17,7 +18,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "mediaconvert" {
-  name   = "mediaconvert-${local.application}"
+  name   = "mediaconvert-kantar-policy"
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -53,13 +54,14 @@ EOF
 
 
 resource "aws_iam_role" "lambda_submit_job" {
-  name = "lambda-${local.application}-submit-job"
+  name = "lambda-submit-job"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Action = "sts:AssumeRole"
         Effect = "Allow"
+        Sid    = ""
         Principal = {
           Service = "lambda.amazonaws.com"
         }
@@ -69,7 +71,7 @@ resource "aws_iam_role" "lambda_submit_job" {
 }
 
 resource "aws_iam_role_policy" "lambda_submit_job" {
-  name = "lambda-${local.application}-submit-job"
+  name = "lambda-submit-job"
   role = aws_iam_role.lambda_submit_job.id
 
   policy = <<-EOF
@@ -102,13 +104,14 @@ EOF
 }
 
 resource "aws_iam_role" "lambda_complete_job" {
-  name = "lambda-${local.application}-complete-job"
+  name = "lambda-complete-job"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Action = "sts:AssumeRole"
         Effect = "Allow"
+        Sid    = ""
         Principal = {
           Service = "lambda.amazonaws.com"
         }
@@ -161,13 +164,14 @@ resource "aws_iam_role_policy_attachment" "lambda_submit_job" {
 }
 
 resource "aws_iam_role" "lambda_authentication" {
-  name = "lambda-${local.application}-authentication"
+  name = "lambda-authentication"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Action = "sts:AssumeRole"
         Effect = "Allow"
+        Sid    = ""
         Principal = {
           Service = "lambda.amazonaws.com"
         }
@@ -177,7 +181,7 @@ resource "aws_iam_role" "lambda_authentication" {
 }
 
 resource "aws_iam_role_policy" "lambda_authentication_secrets" {
-  name = "lambda-${local.application}-authentication-secrets"
+  name = "lambda-authentication-secrets"
   role = aws_iam_role.lambda_authentication.id
 
   policy = <<-EOF
@@ -187,7 +191,7 @@ resource "aws_iam_role_policy" "lambda_authentication_secrets" {
     {
       "Effect":"Allow",
       "Action": "secretsmanager:GetSecretValue",
-      "Resource": "${aws_secretsmanager_secret.ftps_user_habid.arn}"
+      "Resource": "*"
     }
   ]
 }
@@ -200,13 +204,14 @@ resource "aws_iam_role_policy_attachment" "lambda_authentication" {
 }
 
 resource "aws_iam_role" "api_gw" {
-  name = "api-gw-${local.application}"
+  name = "api-gw-cloudwatch"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Action = "sts:AssumeRole"
         Effect = "Allow"
+        Sid    = ""
         Principal = {
           Service = "apigateway.amazonaws.com"
         }
@@ -235,6 +240,11 @@ resource "aws_iam_role_policy" "api_gw" {
             "logs:FilterLogEvents"
             ],
       "Resource": "*"
+    },
+    {
+      "Effect":"Allow",
+      "Action": "lambda:*",
+      "Resource": "*"
     }
   ]
 }
@@ -242,13 +252,14 @@ EOF
 }
 
 resource "aws_iam_role" "user_role" {
-  name = "ftps-${local.application}-user-role"
+  name = "ftps-user-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Action = "sts:AssumeRole"
         Effect = "Allow"
+        Sid    = ""
         Principal = {
           Service = "transfer.amazonaws.com"
         }
@@ -303,6 +314,7 @@ resource "aws_iam_role" "transfer_server" {
       {
         Action = "sts:AssumeRole"
         Effect = "Allow"
+        Sid    = ""
         Principal = {
           Service = "transfer.amazonaws.com"
         }
@@ -325,6 +337,7 @@ resource "aws_iam_role" "lambda_sftp_forward" {
       {
         Action = "sts:AssumeRole"
         Effect = "Allow"
+        Sid    = ""
         Principal = {
           Service = "lambda.amazonaws.com"
         }

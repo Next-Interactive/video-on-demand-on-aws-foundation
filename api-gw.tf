@@ -77,6 +77,7 @@ resource "aws_api_gateway_integration" "lambda" {
   rest_api_id             = aws_api_gateway_rest_api.ftps_authentication.id
   resource_id             = aws_api_gateway_resource.config.id
   http_method             = aws_api_gateway_method.get_user_config.http_method
+  credentials             = aws_iam_role.api_gw.arn
   type                    = "AWS"
   integration_http_method = "POST"
   uri                     = "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/${aws_lambda_function.ftps_authentication.arn}/invocations"
@@ -104,7 +105,7 @@ resource "aws_api_gateway_method_response" "response_200" {
   rest_api_id = aws_api_gateway_rest_api.ftps_authentication.id
   resource_id = aws_api_gateway_resource.config.id
   http_method = aws_api_gateway_method.get_user_config.http_method
-  status_code = "200"
+  status_code = 200
   response_models = {
     "application/json" = "userconfig"
   }
