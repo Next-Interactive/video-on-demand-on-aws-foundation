@@ -25,7 +25,7 @@ resource "aws_lambda_function" "submit_job" {
       DESTINATION_BUCKET = module.source_bucket.id
       KANTAR_LOGS_BUCKET = module.kantar_bucket.id
       SOLUTION_ID        = "SO0146"
-      SNS_TOPIC_ARN      = aws_sns_topic.kantar_flow.arn
+      SUPPORT_EMAIL      = "exploitation-tech-digital@nextinteractive.fr"
       RAW_VIDEO_FOLDER   = local.raw_video_folder,
       MARKED_VIDEO_FOLDER  = "kantar-watermarked-videos"
       KANTAR_LOG_FOLDER    = "kantar-logs"
@@ -64,44 +64,6 @@ resource "aws_lambda_function" "complete_job" {
     }
   }
 }
-
-data "archive_file" "ftps_authentication" {
-  type        = "zip"
-  source_file = "./lambdas/sftp_authenticator.py"
-  output_path = "./lambdas-output/sftp_authentication.zip"
-}
-
-resource "aws_lambda_function" "ftps_authentication" {
-  #checkov:skip=CKV_AWS_272:Ensure AWS Lambda function is configured to validate code-signing
-  #checkov:skip=CKV_AWS_116:Ensure that AWS Lambda function is configured for a Dead Letter Queue(DLQ)
-  #checkov:skip=CKV_AWS_117:Ensure that AWS Lambda function is configured inside a VPC
-  #checkov:skip=CKV_AWS_115:Ensure that AWS Lambda function is configured for function-level concurrent execution limit
-  #checkov:skip=CKV_AWS_50:X-ray tracing is enabled for Lambda
-  #checkov:skip=CKV_AWS_173:Check encryption settings for Lambda environmental variable
-  filename         = data.archive_file.ftps_authentication.output_path
-  function_name    = "${local.application}-ftps-authentication"
-  role             = aws_iam_role.lambda_authentication.arn
-  handler          = "sftp_authenticator.lambda_handler"
-  runtime          = "python3.7"
-  source_code_hash = filebase64sha256(data.archive_file.ftps_authentication.output_path)
-  memory_size      = 128
-  timeout          = 30
-  environment {
-    variables = {
-      SecretsManagerRegion = local.region
-    }
-  }
-}
-
-
-resource "aws_lambda_permission" "authentication" {
-  statement_id  = "AllowExecutionFromApiGW"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.ftps_authentication.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${local.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.ftps_authentication.id}/*"
-}
-
 
 resource "aws_lambda_function" "mediametrie_sftp" {
   #checkov:skip=CKV_AWS_272:Ensure AWS Lambda function is configured to validate code-signing

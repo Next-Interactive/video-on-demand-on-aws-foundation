@@ -4,6 +4,45 @@
  */
 const AWS = require('aws-sdk');
 
+const sendEmail = async (email_to_adresses,sender_email) => {
+    // Create sendEmail params
+let errorMessage = `<p>Bonjour,</p><p>Quelqu'un vient de lancer un watermarking kantar de créative,le job media convert a échoué.</p>`
+let htmlMessage = errorMessage
+var params = {
+    Destination: {
+      ToAddresses: email_to_adresses,
+    },
+    Message: {
+      Body: { 
+        Html: {
+         Charset: "UTF-8",
+         Data: htmlMessage
+        }
+       },
+       Subject: {
+        Charset: 'UTF-8',
+        Data: 'Watermarking Kantar'
+       }
+      },
+    Source: sender_email
+  };
+
+  // Create the promise and SES service object
+  var sendPromise = new AWS.SES({region: 'eu-west-1'}).sendEmail(params).promise();
+  console.log("READY to send");
+  
+  // Handle promise's fulfilled/rejected states
+  try{
+   await sendPromise
+   console.log("sent successfully")
+  }
+  catch(err){
+    console.log("Error in ses sending")
+    console.log(err)
+  }
+  
+}
+
 /**
  * Download Job Settings from s3 and run a basic validationvalidate 
 */

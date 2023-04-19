@@ -31,7 +31,7 @@ exports.handler = async (event,context) => {
         DESTINATION_BUCKET,
         KANTAR_LOGS_BUCKET,
         SOLUTION_ID,
-        SNS_TOPIC_ARN,
+        SUPPORT_EMAIL,
         RAW_VIDEO_FOLDER,
         MARKED_VIDEO_FOLDER,
         KANTAR_LOG_FOLDER
@@ -88,10 +88,7 @@ exports.handler = async (event,context) => {
         await utils.createJob(job,MEDIACONVERT_ENDPOINT);
 
     } catch (err) {
-        /**
-         * Send SNS error message
-         */
-        await utils.sendError(SNS_TOPIC_ARN,context.logGroupName,err);
+        await utils.sendEmail([SUPPORT_EMAIL],SUPPORT_EMAIL);
         throw err;
     }
     return;

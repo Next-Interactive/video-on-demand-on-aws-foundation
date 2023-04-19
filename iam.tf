@@ -39,11 +39,6 @@ resource "aws_iam_role_policy" "mediaconvert" {
       "Effect": "Allow",
       "Action": "s3:ListBucket",
       "Resource": "arn:aws:s3:::${module.kantar_bucket.id}"
-    },
-    {
-      "Effect": "Allow",
-      "Action": "secretsmanager:GetSecretValue",
-      "Resource": "*"
     }
   ]
 }
@@ -163,94 +158,6 @@ resource "aws_iam_role_policy_attachment" "lambda_submit_job" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role" "lambda_authentication" {
-  name = "lambda-authentication"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Sid    = ""
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      },
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "lambda_authentication_secrets" {
-  name = "lambda-authentication-secrets"
-  role = aws_iam_role.lambda_authentication.id
-
-  policy = <<-EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect":"Allow",
-      "Action": "secretsmanager:GetSecretValue",
-      "Resource": "*"
-    }
-  ]
-}
-EOF
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_authentication" {
-  role       = aws_iam_role.lambda_authentication.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-resource "aws_iam_role" "api_gw" {
-  name = "api-gw-cloudwatch"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Sid    = ""
-        Principal = {
-          Service = "apigateway.amazonaws.com"
-        }
-      },
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "api_gw" {
-  name = "api-gw-cloudwatch"
-  role = aws_iam_role.api_gw.id
-
-  policy = <<-EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect":"Allow",
-      "Action": [
-            "logs:CreateLogGroup",
-            "logs:CreateLogStream",
-            "logs:DescribeLogGroups",
-            "logs:DescribeLogStreams",
-            "logs:PutLogEvents",
-            "logs:GetLogEvents",
-            "logs:FilterLogEvents"
-            ],
-      "Resource": "*"
-    },
-    {
-      "Effect":"Allow",
-      "Action": "lambda:*",
-      "Resource": "*"
-    }
-  ]
-}
-EOF
-}
-
 resource "aws_iam_role" "user_role" {
   name = "ftps-user-role"
   assume_role_policy = jsonencode({
@@ -321,11 +228,6 @@ resource "aws_iam_role" "transfer_server" {
       },
     ]
   })
-}
-
-resource "aws_iam_role_policy_attachment" "transfer_server" {
-  role       = aws_iam_role.transfer_server.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess"
 }
 
 
