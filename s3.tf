@@ -37,16 +37,12 @@ resource "aws_s3_object" "job_definition" {
   #checkov:skip=CKV_AWS_186: "Ensure S3 bucket Object is encrypted by KMS using a customer managed Key (CMK)"
   bucket  = module.source_bucket.id
   key     = "${local.raw_video_folder}/job-settings.json"
-  content = templatefile("${path.module}/job-settings.json.tmpl",{})
-}
-
-data "template_file" "job_manifest" {
-  template = file("${path.module}/jobs-manifest.json.tmpl")
+  content = templatefile("${path.module}/job-settings.json.tmpl", {})
 }
 
 resource "aws_s3_object" "jobs_manifest" {
   #checkov:skip=CKV_AWS_186: "Ensure S3 bucket Object is encrypted by KMS using a customer managed Key (CMK)"
   bucket  = module.source_bucket.id
   key     = "jobs-manifest.json"
-  content = templatefile("${path.module}/jobs-manifest.json.tmpl",{})
+  content = templatefile("${path.module}/jobs-manifest.json.tmpl", {})
 }

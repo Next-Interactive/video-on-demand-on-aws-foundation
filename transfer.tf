@@ -1,28 +1,15 @@
-data "aws_subnet_ids" "public" {
-  vpc_id = var.vpc_id
-  filter {
-    name   = "map-public-ip-on-launch"
-    values = ["true"]
-  }
-}
-
-resource "aws_eip" "public_ip" {
-  for_each = data.aws_subnet_ids.public.ids
-
-  vpc = true
-}
-
 resource "aws_transfer_server" "kantar_watermarking" {
-  endpoint_type = "PUBLIC"  
+  #checkov:skip=CKV_AWS_164: "Ensure Transfer Server is not exposed publicly."
+  endpoint_type          = "PUBLIC"
   protocols              = ["SFTP"]
   domain                 = "S3"
   identity_provider_type = "SERVICE_MANAGED"
 }
 
 resource "aws_transfer_user" "habid" {
-  server_id = aws_transfer_server.kantar_watermarking.id
-  user_name = "habid"
-  role      = aws_iam_role.user_role.arn  
+  server_id           = aws_transfer_server.kantar_watermarking.id
+  user_name           = "habid"
+  role                = aws_iam_role.user_role.arn
   home_directory_type = "LOGICAL"
   home_directory_mappings {
     entry  = "/"
@@ -38,9 +25,9 @@ resource "aws_transfer_ssh_key" "habid" {
 
 
 resource "aws_transfer_user" "lcarriere" {
-  server_id = aws_transfer_server.kantar_watermarking.id
-  user_name = "lcarriere"
-  role      = aws_iam_role.user_role.arn  
+  server_id           = aws_transfer_server.kantar_watermarking.id
+  user_name           = "lcarriere"
+  role                = aws_iam_role.user_role.arn
   home_directory_type = "LOGICAL"
   home_directory_mappings {
     entry  = "/"
